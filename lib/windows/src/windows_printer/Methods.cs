@@ -229,7 +229,7 @@ namespace windows_printer
             {
                 using (var document = PdfDocument.Load(filename))
                 {
-                    using (PrintDocument pd = document.CreatePrintDocument())
+                    using (PrintDocument pd = document.CreatePrintDocument(PdfPrintMode.ShrinkToMargin))
                     {
                         pd.PrinterSettings = printerSettings;
                         pd.DefaultPageSettings = pageSettings;
