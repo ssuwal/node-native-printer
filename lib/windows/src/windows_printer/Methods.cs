@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Printing;
 using System.Printing;
 using System.Web;
+using System.IO;
 
 using PdfiumViewer;
 
@@ -264,7 +265,9 @@ namespace windows_printer
 
                 pd.PrintPage += delegate (object sender, PrintPageEventArgs args)
                 {
-                    Image image = Image.FromFile(filename);
+                    FileStream stream = new FileStream(filename, FileMode.Open, FileAccess.Read);
+                    Image image = Image.FromStream(stream);
+                    stream.Close();
                     if (landscape)
                     {
                         // in landscape mode width is actually height and vice-versa
