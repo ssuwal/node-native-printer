@@ -24,6 +24,9 @@ namespace windows_printer
         public bool Color;
         public bool Landscape;
         public String PaperSize;
+
+        public bool usePaper;
+        public float scale;
     }
     public struct PrinterOptions
     {
@@ -167,24 +170,24 @@ namespace windows_printer
             switch (mimeType)
             {
                 case "application/pdf":
-                    return PrintPDF(filename, printerSettings, pageSettings, copies);
+                    return PrintPDF(filename, printerSettings, pageSettings, copies, settings.usePaper, settings.scale);
 
                 case "application/octet-stream":
                     string extension = filename.Substring(filename.LastIndexOf("."));
 
                     if (octetStreamSupportedExtensions.Contains(extension))
-                        return PrintText(filename, printerSettings, pageSettings, copies);
+                        return PrintText(filename, printerSettings, pageSettings, copies, settings.usePaper, settings.scale);
                     else
                         return false;
 
                 case "application/x-javascript":
-                    return PrintText(filename, printerSettings, pageSettings, copies);
+                    return PrintText(filename, printerSettings, pageSettings, copies, settings.usePaper, settings.scale);
 
                 default:
                     if (mimeType.Contains("image/"))
-                        return PrintImage(filename, printerSettings, pageSettings, copies);
+                        return PrintImage(filename, printerSettings, pageSettings, copies, settings.usePaper, settings.scale);
                     else if (mimeType.Contains("text/"))
-                        return PrintText(filename, printerSettings, pageSettings, copies);
+                        return PrintText(filename, printerSettings, pageSettings, copies, settings.usePaper, settings.scale);
                     else
                         return false;
             }
@@ -221,7 +224,7 @@ namespace windows_printer
             return (new PrintServer()).GetPrintQueue(printerName);
         }
 
-        private static bool PrintPDF(string filename, PrinterSettings printerSettings, PageSettings pageSettings, int copies)
+        private static bool PrintPDF(string filename, PrinterSettings printerSettings, PageSettings pageSettings, int copies, bool usePaper, float scale)
         {
             bool landscape = pageSettings.Landscape,
                  color = pageSettings.Color;
@@ -251,7 +254,7 @@ namespace windows_printer
                 return false;
             }
         }
-        private static bool PrintImage(string filename, PrinterSettings printerSettings, PageSettings pageSettings, int copies)
+        private static bool PrintImage(string filename, PrinterSettings printerSettings, PageSettings pageSettings, int copies, bool usePaper, float scale)
         {
             bool landscape = pageSettings.Landscape,
                  color = pageSettings.Color;
@@ -268,17 +271,28 @@ namespace windows_printer
                     FileStream stream = new FileStream(filename, FileMode.Open, FileAccess.Read);
                     Image image = Image.FromStream(stream);
                     stream.Close();
+                    if (scale > 0.0) {
+                        args.Graphics.PageScale = scale;
+                    }
+                    Console.WriteLine("Is Landscape");
+                    Console.WriteLine(landscape);
+                    Console.WriteLine("Use Paper Boundary");
+                    Console.WriteLine(usePaper);
                     if (landscape)
                     {
                         // in landscape mode width is actually height and vice-versa
-                        var width = args.PageSettings.PrintableArea.Width;
-                        var height = args.PageSettings.PrintableArea.Height;
+                        var width = usePaper ? args.PageSettings.PaperSize.Width : args.PageSettings.PrintableArea.Width;
+                        var height = usePaper ? args.PageSettings.PaperSize.Height : args.PageSettings.PrintableArea.Height;
+                        Console.WriteLine(width);
+                        Console.WriteLine(height);
                         args.Graphics.DrawImage(image, 0, 0, height, width);
                     }
                     else
                     {
-                        var width = args.PageSettings.PrintableArea.Width;
-                        var height = args.PageSettings.PrintableArea.Height;
+                        var width = usePaper ? args.PageSettings.PaperSize.Width : args.PageSettings.PrintableArea.Width;
+                        var height = usePaper ? args.PageSettings.PaperSize.Height : args.PageSettings.PrintableArea.Height;
+                        Console.WriteLine(width);
+                        Console.WriteLine(height);
                         args.Graphics.DrawImage(image, 0, 0, width, height);
                     }
                 };
@@ -297,7 +311,7 @@ namespace windows_printer
                 return false;
             }
         }
-        private static bool PrintText(string filename, PrinterSettings printerSettings, PageSettings pageSettings, int copies)
+        private static bool PrintText(string filename, PrinterSettings printerSettings, PageSettings pageSettings, int copies, bool usePaper, float scale)
         {
             bool landscape = pageSettings.Landscape,
                  color = pageSettings.Color;

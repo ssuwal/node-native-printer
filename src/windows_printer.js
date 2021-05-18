@@ -134,7 +134,9 @@ module.exports = class WinPrinter{
      *     color?: boolean,
      *     landscape?: boolean,
      *     paperSize?: string,
-     *     copies?: number
+     *     copies?: number,
+	 * 	   scale?: number,
+	 *     usePaper?: boolean,
      * }} userOptions
      * @param {string?} printer
      * @returns {Promise<boolean>}
@@ -157,6 +159,8 @@ module.exports = class WinPrinter{
 			paperSize : '',
 			printerName: printer,
 			copies: 1,
+			scale: 1.0,
+			usePaper: false,
 			filePath: filename
 		}
 
