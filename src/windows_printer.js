@@ -165,7 +165,7 @@ module.exports = class WinPrinter{
 			usePaper: false,
 			filePath: filename,
 			resolution: 'Medium',
-			ShrinkToMargin: false,
+			margin: 0,
 		}
 
 		let options = {};

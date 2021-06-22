@@ -35,7 +35,7 @@ namespace windows_printer
                 usePaper = (bool)input.usePaper,
                 scale = (float)input.scale,
                 resolution = (String)input.resolution,
-                ShrinkToMargin = (bool)input.ShrinkToMargin
+                margin = (int)input.margin,
             };
 
             String printerName = (String)input.printerName;

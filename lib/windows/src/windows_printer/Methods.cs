@@ -28,7 +28,7 @@ namespace windows_printer
 
         public bool usePaper;
         public float scale;
-        public bool ShrinkToMargin;
+        public int margin;
     }
     public struct PrinterOptions
     {
@@ -182,7 +182,7 @@ namespace windows_printer
             switch (mimeType)
             {
                 case "application/pdf":
-                    return PrintPDF(filename, printerSettings, pageSettings, copies, settings.usePaper, settings.scale, settings.ShrinkToMargin);
+                    return PrintPDF(filename, printerSettings, pageSettings, copies, settings.usePaper, settings.scale, settings.margin);
 
                 case "application/octet-stream":
                     string extension = filename.Substring(filename.LastIndexOf("."));
@@ -236,7 +236,7 @@ namespace windows_printer
             return (new PrintServer()).GetPrintQueue(printerName);
         }
 
-        private static bool PrintPDF(string filename, PrinterSettings printerSettings, PageSettings pageSettings, int copies, bool usePaper, float scale, bool ShrinkToMargin)
+        private static bool PrintPDF(string filename, PrinterSettings printerSettings, PageSettings pageSettings, int copies, bool usePaper, float scale, int margin)
         {
             bool landscape = pageSettings.Landscape,
                  color = pageSettings.Color;
@@ -245,7 +245,7 @@ namespace windows_printer
             {
                 using (var document = PdfDocument.Load(filename))
                 {
-                    using (PrintDocument pd = ShrinkToMargin ? document.CreatePrintDocument() : document.CreatePrintDocument(PdfPrintMode.ShrinkToMargin))
+                    using (PrintDocument pd = margin == 1 ? document.CreatePrintDocument(PdfPrintMode.ShrinkToMargin) : margin == 2 ? document.CreatePrintDocument(PdfPrintMode.CutMargin) : document.CreatePrintDocument())
                     {
                         pd.PrinterSettings = printerSettings;
                         pd.DefaultPageSettings = pageSettings;
