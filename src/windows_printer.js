@@ -137,6 +137,8 @@ module.exports = class WinPrinter{
      *     copies?: number,
 	 * 	   scale?: number,
 	 *     usePaper?: boolean,
+	 *	   resolution?: string,
+	 *	   ShrinkToMargin?: boolean,
      * }} userOptions
      * @param {string?} printer
      * @returns {Promise<boolean>}
@@ -161,7 +163,9 @@ module.exports = class WinPrinter{
 			copies: 1,
 			scale: 1.0,
 			usePaper: false,
-			filePath: filename
+			filePath: filename,
+			resolution: 'Medium',
+			ShrinkToMargin: false,
 		}
 
 		let options = {};

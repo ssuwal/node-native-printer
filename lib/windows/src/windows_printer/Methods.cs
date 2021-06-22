@@ -24,9 +24,11 @@ namespace windows_printer
         public bool Color;
         public bool Landscape;
         public String PaperSize;
+        public String resolution;
 
         public bool usePaper;
         public float scale;
+        public bool ShrinkToMargin;
     }
     public struct PrinterOptions
     {
@@ -112,6 +114,7 @@ namespace windows_printer
         public static bool Print(String printer, Settings settings, String filename, short copies)
         {
             PrinterSettings printerSettings = new PrinterSettings { PrinterName = printer };
+            PrinterResolution pr = printerSettings.PrinterResolutions[0];
 
             if (!printerSettings.IsValid)
             {
@@ -131,13 +134,22 @@ namespace windows_printer
             if (settings.ToPage > 0)
                 printerSettings.ToPage = settings.ToPage;
 
+            for (int i = 0; i < printerSettings.PrinterResolutions.Count; i++)
+            {
+               if (settings.resolution == printerSettings.PrinterResolutions[i].Kind.ToString())
+                {
+                    pr = printerSettings.PrinterResolutions[i];
+                }
+            }
 
             PageSettings pageSettings = new PageSettings(printerSettings)
             {
                 Margins = new Margins(0, 0, 0, 0),
                 Color = settings.Color,
-                Landscape = settings.Landscape
+                Landscape = settings.Landscape,
+                PrinterResolution = pr,
             };
+            Console.Write(pageSettings);
 
             string paperSize = settings.PaperSize;
             if (paperSize.Length > 0)
@@ -170,7 +182,7 @@ namespace windows_printer
             switch (mimeType)
             {
                 case "application/pdf":
-                    return PrintPDF(filename, printerSettings, pageSettings, copies, settings.usePaper, settings.scale);
+                    return PrintPDF(filename, printerSettings, pageSettings, copies, settings.usePaper, settings.scale, settings.ShrinkToMargin);
 
                 case "application/octet-stream":
                     string extension = filename.Substring(filename.LastIndexOf("."));
@@ -224,7 +236,7 @@ namespace windows_printer
             return (new PrintServer()).GetPrintQueue(printerName);
         }
 
-        private static bool PrintPDF(string filename, PrinterSettings printerSettings, PageSettings pageSettings, int copies, bool usePaper, float scale)
+        private static bool PrintPDF(string filename, PrinterSettings printerSettings, PageSettings pageSettings, int copies, bool usePaper, float scale, bool ShrinkToMargin)
         {
             bool landscape = pageSettings.Landscape,
                  color = pageSettings.Color;
@@ -233,7 +245,7 @@ namespace windows_printer
             {
                 using (var document = PdfDocument.Load(filename))
                 {
-                    using (PrintDocument pd = document.CreatePrintDocument(PdfPrintMode.ShrinkToMargin))
+                    using (PrintDocument pd = ShrinkToMargin ? document.CreatePrintDocument() : document.CreatePrintDocument(PdfPrintMode.ShrinkToMargin))
                     {
                         pd.PrinterSettings = printerSettings;
                         pd.DefaultPageSettings = pageSettings;
